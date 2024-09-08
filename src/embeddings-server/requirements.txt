@@ -1,0 +1,9 @@
+chromadb
+llama-index
+python-dotenv
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+sentence-transformers
+httpx

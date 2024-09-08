@@ -1,0 +1,52 @@
+services:
+  # this will download the models specified (if they already exists then it will skip downloading)
+  model_downloader: 
+    image: amikos/hf-model-downloader
+    env_file:
+      - .env  # Use environment variables from .env file
+    command: ${EMBEDDING_MODEL_NAME}
+    volumes:
+      - ./${DATA_DIR}/models:/models
+    environment:
+      - USE_CACHE=TRUE
+
+  embeddings-server:
+    build: ./embeddings-server
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env  # Use environment variables from .env file
+    volumes:
+      - ./${DATA_DIR}:/data  # Mount shared data directory
+    ports:
+      - "8000:8000"  # Expose port for the embeddings server API
+
+  llm-server:
+      image: vllm/vllm-openai:latest
+      ports:
+        - "8001:8001"
+      volumes:
+        - ~/.cache/huggingface:/root/.cache/huggingface
+      env_file:
+        - .env
+      deploy:
+         resources:
+           reservations:
+             devices:
+               - capabilities: [gpu]
+      command: ["--model", "${LLM_MODEL_NAME}", "--dtype", "${DTYPE}", "--ipc", "${IPC}"]
+
+  app-server:
+    build:
+      context: ./app-server  # Path to the app-server Dockerfile (formerly custom-app)
+    container_name: app-server
+    volumes:
+      - ./${DATA_DIR}:/app/data  # Shared data directory for agent file handling
+    environment:
+      - PYTHONUNBUFFERED=1
+      - EMBEDDINGS_SERVER_PORT=8000
+      - LLM_SERVER_PORT=8001
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"  # Expose the app-server API port
