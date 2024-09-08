@@ -2,9 +2,9 @@ import React, { createContext, useState, useContext } from 'react';
 
 // Create BaseURL
 // uncomment below for development
-const baseUrl = 'http://localhost:8080'; 
+//const baseUrl = 'http://localhost:8080'; 
 // uncomment below for production
-//const baseUrl = window.location.origin;
+const baseUrl = window.location.origin;
 
 // Create X-Header auth string
 const X_REQUEST_STR = 'XteNATqxnbBkPa6TCHcK0NTxOM1JVkQl'

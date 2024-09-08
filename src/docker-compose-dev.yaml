@@ -21,25 +21,26 @@ services:
     ports:
       - "8000:8000"  # Expose port for the embeddings server API
 
-  llm-server:
-      image: vllm/vllm-openai:latest
-      ports:
-        - "8001:8001"
-      volumes:
-        - ~/.cache/huggingface:/root/.cache/huggingface
-      env_file:
-        - .env
-      deploy:
-         resources:
-           reservations:
-             devices:
-               - capabilities: [gpu]
-      command: ["--model", "${LLM_MODEL_NAME}", "--dtype", "${DTYPE}", "--ipc", "${IPC}"]
+  # llm-server:
+  #     image: vllm/vllm-openai:latest
+  #     ports:
+  #       - "8001:8001"
+  #     volumes:
+  #       - ~/.cache/huggingface:/root/.cache/huggingface
+  #     env_file:
+  #       - .env
+  #     deploy:
+  #        resources:
+  #          reservations:
+  #            devices:
+  #              - capabilities: [gpu]
+  #     command: ["--model", "${LLM_MODEL_NAME}", "--dtype", "${DTYPE}", "--ipc", "${IPC}"]
 
   app-server:
     build:
       context: ./app-server  # Path to the app-server Dockerfile (formerly custom-app)
     container_name: app-server
+    hostname: app-server-app
     volumes:
       - ./${DATA_DIR}:/app/data  # Shared data directory for agent file handling
     environment:
@@ -50,3 +51,9 @@ services:
       - .env
     ports:
       - "8080:8080"  # Expose the app-server API port
+  
+  proxy-server:
+    build: ./proxy-server
+    ports:
+      - "80:80"
+    container_name: rx-app
