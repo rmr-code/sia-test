@@ -12,7 +12,6 @@ from models import Agent, User
 from database import db
 import os
 import threading
-from openai import OpenAI
 
 
 app = Flask(__name__, static_folder='dist/assets', template_folder='dist')
@@ -142,29 +141,24 @@ def compose_request(instruction, document_chunks, history, user_prompt):
 
 # Helper function to call the vllm server
 def send_prompt_vllm(messages):
+    print(41)
     try:
-        # Call the vLLM API using the OpenAI format
+        # Call the vLLM API using requests
         BASE_URL = f"http://llm-server:{app.config['LLM_SERVER_PORT']}/v1"
-        API_KEY = app.config['OPENAPI_KEY']
-
-        # create the API client
-        client = OpenAI(
-            base_url=BASE_URL,
-            api_key=API_KEY,
+        response = requests.post(
+            f"{BASE_URL}/chat/completions",
+            json={
+                "model": app.config['LLM_MODEL_NAME'],  # Replace with your model's name
+                "messages": messages
+            }
         )
-        # get the first model
-        models = client.models.list()
-        currmodel = models.data[0].id
-        # make the model api call
-        response = client.chat.completions.create(
-            model=currmodel,
-            messages=messages
-        )    
-        
-        return response
-    except Exception as e:
-        print (e)
-        raise Exception(str(e))
+        print(42)
+        response.raise_for_status()
+        print(43)
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(44, str(e))
+        raise Exception(f"Error connecting to vLLM server: {str(e)}")
 
 # now the routes
 

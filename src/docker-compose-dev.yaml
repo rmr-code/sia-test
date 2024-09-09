@@ -21,20 +21,21 @@ services:
     ports:
       - "8000:8000"  # Expose port for the embeddings server API
 
-  # llm-server:
-  #     image: vllm/vllm-openai:latest
-  #     ports:
-  #       - "8001:8001"
-  #     volumes:
-  #       - ~/.cache/huggingface:/root/.cache/huggingface
-  #     env_file:
-  #       - .env
-  #     deploy:
-  #        resources:
-  #          reservations:
-  #            devices:
-  #              - capabilities: [gpu]
-  #     command: ["--model", "${LLM_MODEL_NAME}", "--dtype", "${DTYPE}", "--ipc", "${IPC}"]
+  llm-server:
+    image: vllm/vllm-openai:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    env_file:
+      - .env
+    ipc: "host"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    command: ["--model", "${LLM_MODEL_NAME}", "--dtype", "${DTYPE}"]
 
   app-server:
     build:
