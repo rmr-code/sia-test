@@ -19,12 +19,12 @@ services:
     volumes:
       - ./${DATA_DIR}:/data  # Mount shared data directory
     ports:
-      - "8000:8000"  # Expose port for the embeddings server API
+      - "5000:5000"  # Expose port for the embeddings server API
 
   llm-server:
     image: vllm/vllm-openai:latest
     ports:
-      - "8001:8000"
+      - "8000:8000"
     volumes:
       - ~/.cache/huggingface:/root/.cache/huggingface
     env_file:

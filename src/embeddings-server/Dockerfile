@@ -10,7 +10,7 @@ RUN pip install  --no-cache-dir --upgrade -r requirements.txt
 COPY . .
 
 # set port
-EXPOSE 8000
+EXPOSE 5000
 
 # start the uvicorn server
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]
