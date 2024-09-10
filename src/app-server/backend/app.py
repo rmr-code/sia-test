@@ -149,7 +149,8 @@ def send_prompt_vllm(messages):
             json={
                 "model": app.config['LLM_MODEL_NAME'],  # Replace with your model's name
                 "messages": messages
-            }
+            },
+            timeout=600
         )
         response.raise_for_status()
         response_data = response.json()
@@ -172,9 +173,10 @@ def send_prompt_ollama(messages):
         response = requests.post(
             f"{BASE_URL}/api/chat",
             json={
-                "model": "phi3",  # Replace with your model's name
+                "model": "phi3", 
                 "messages": messages
-            }
+            },
+            timeout=600
         )
         response.raise_for_status()
         response_data = response.json()
@@ -588,7 +590,6 @@ def update_embeddings_status(agent_name):
         db.session.rollback()
         return jsonify({"msg": f"Error updating embeddings status: {str(e)}"}), 500
 
-
 # GET method for retrieving an agent's details required by Chat with no auth
 @app.route('/api/chat/<string:agent_name>', methods=['GET'])
 def get_agent_for_chat(agent_name):
@@ -637,6 +638,8 @@ def chat_completion(agent_name):
         # compose request
         messages = compose_request(agent.instructions, document_text_array, messages, input)
 
+        print(messages)
+
         # call vLLM server
         #llm_response = send_prompt_vllm(messages)
         llm_response = send_prompt_ollama(messages)
@@ -645,7 +648,6 @@ def chat_completion(agent_name):
         return  jsonify({"success": True, "content": llm_response["content"], "role": llm_response["role"]})
     except Exception as e:
         return jsonify({"success": False, "content": str(e), "role":"assistant"})
-
 
 # static files
 @app.route('/', defaults={'path': ''})

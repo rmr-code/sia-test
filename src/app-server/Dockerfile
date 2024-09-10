@@ -21,4 +21,4 @@ EXPOSE 8080
 # Use Flask for development
 #CMD ["flask", "run", "--host=0.0.0.0", "--port=8000", "--reload"]
 # Use Gunicorn as the WSGI HTTP server for production
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "app:app", "--reload"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "app:app", "--timeeout", "600",ß "--reload"]

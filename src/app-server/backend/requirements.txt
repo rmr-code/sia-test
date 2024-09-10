@@ -5,4 +5,3 @@ flask-cors
 python-dotenv
 gunicorn
 requests
-openai
