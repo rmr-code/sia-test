@@ -21,21 +21,46 @@ services:
     ports:
       - "5000:5000"  # Expose port for the embeddings server API
 
+  version: '3.8'
+
   llm-server:
-    image: vllm/vllm-openai:latest
+    image: ollama/ollama
+    restart: always
     ports:
-      - "8000:8000"
+      - "11434:11434"
     volumes:
-      - ~/.cache/huggingface:/root/.cache/huggingface
-    env_file:
-      - .env
-    ipc: "host"
+      - ollama:/root/.ollama
     deploy:
       resources:
         reservations:
           devices:
             - capabilities: [gpu]
-    command: ["--model", "${LLM_MODEL_NAME}", "--dtype", "${DTYPE}"]
+
+  ollama_pull:
+    image: ollama/ollama
+    command: pull phi3
+    environment:
+      - OLLAMA_HOST=llm-server
+    depends_on:
+      - llm-server
+    
+volumes:
+  ollama:
+  # llm-server:
+  #   image: vllm/vllm-openai:latest
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ~/.cache/huggingface:/root/.cache/huggingface
+  #   env_file:
+  #     - .env
+  #   ipc: "host"
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - capabilities: [gpu]
+  #   command: ["--model", "${LLM_MODEL_NAME}", "--dtype", "${DTYPE}"]
 
   app-server:
     build:

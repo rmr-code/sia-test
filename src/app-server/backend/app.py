@@ -141,7 +141,6 @@ def compose_request(instruction, document_chunks, history, user_prompt):
 
 # Helper function to call the vllm server
 def send_prompt_vllm(messages):
-    print(41)
     try:
         # Call the vLLM API using requests
         BASE_URL = f"http://llm-server:{app.config['LLM_SERVER_PORT']}/v1"
@@ -152,12 +151,40 @@ def send_prompt_vllm(messages):
                 "messages": messages
             }
         )
-        print(42)
         response.raise_for_status()
-        print(43)
-        return response.json()
+        response_data = response.json()
+        choices = response_data['choices']
+        choice = choices[0]
+        message = choice['message']
+        resp_json = {
+            "content": message['content'],
+            "role": message['role']
+        }
+        return resp_json
     except requests.exceptions.RequestException as e:
-        print(44, str(e))
+        raise Exception(f"Error connecting to vLLM server: {str(e)}")
+
+# Helper function to call the vllm server
+def send_prompt_ollama(messages):
+    try:
+        # Call the vLLM API using requests
+        BASE_URL = f"http://llm-server:11434"
+        response = requests.post(
+            f"{BASE_URL}/api/chat",
+            json={
+                "model": "phi3",  # Replace with your model's name
+                "messages": messages
+            }
+        )
+        response.raise_for_status()
+        response_data = response.json()
+        message = response_data['message']
+        resp_json = {
+            "content": message['content'],
+            "role": message['role']
+        }
+        return resp_json
+    except requests.exceptions.RequestException as e:
         raise Exception(f"Error connecting to vLLM server: {str(e)}")
 
 # now the routes
@@ -610,11 +637,12 @@ def chat_completion(agent_name):
         # compose request
         messages = compose_request(agent.instructions, document_text_array, messages, input)
 
-        # call LLM server
-        llm_response = send_prompt_vllm(messages)
+        # call vLLM server
+        #llm_response = send_prompt_vllm(messages)
+        llm_response = send_prompt_ollama(messages)
 
         # return to browser
-        return  jsonify({"success": True, "content": llm_response.choices[0].message["content"], "role": llm_response.role})
+        return  jsonify({"success": True, "content": llm_response["content"], "role": llm_response["role"]})
     except Exception as e:
         return jsonify({"success": False, "content": str(e), "role":"assistant"})
 
